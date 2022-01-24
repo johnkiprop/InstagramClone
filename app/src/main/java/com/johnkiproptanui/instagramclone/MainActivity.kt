@@ -8,8 +8,17 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.johnkiproptanui.instagramclone.auth.SignUpScreen
+import com.johnkiproptanui.instagramclone.base.InstagramViewModel
+import com.johnkiproptanui.instagramclone.main.NotificationMessage
 import com.johnkiproptanui.instagramclone.ui.theme.InstagramCloneTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -17,22 +26,35 @@ class MainActivity : ComponentActivity() {
             InstagramCloneTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    Greeting("Android")
+                  InstagramApp()
                 }
             }
         }
     }
 }
 
+sealed class DestinationScreen(val route : String){
+    object SignUp : DestinationScreen("signup")
+}
+
 @Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
+fun InstagramApp() {
+    val viewModel = hiltViewModel<InstagramViewModel>()
+    val navController = rememberNavController()
+
+    NotificationMessage(viewModel = viewModel)
+
+   NavHost(navController = navController, startDestination = DestinationScreen.SignUp.route ){
+       composable(DestinationScreen.SignUp.route){
+           SignUpScreen(navController = navController, viewModel = viewModel)
+       }
+   }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
     InstagramCloneTheme {
-        Greeting("Android")
+        InstagramApp()
     }
 }

@@ -15,5 +15,5 @@ data class UserData(
         "imageUrl" to imageUrl,
         "bio" to bio,
         "following" to following
-    )
+     )
 }

@@ -11,8 +11,6 @@ import com.johnkiproptanui.instagramclone.data.UserData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.lang.Exception
 import javax.inject.Inject
-import kotlin.math.sign
-
 const val USERS = "users"
 @HiltViewModel
 class InstagramViewModel @Inject constructor(
@@ -35,12 +33,6 @@ class InstagramViewModel @Inject constructor(
     }
 
     fun onSignUp(username: String, email: String, password: String) {
-        //flag for if fields are empty
-        if(username.isEmpty() or email.isEmpty() or password.isEmpty()){
-            handleException(customMessage = "Please Fill In All Fields")
-            return
-        }
-
         inProgress.value = true
 
         db.collection(USERS).whereEqualTo("username", username).get()
@@ -63,33 +55,6 @@ class InstagramViewModel @Inject constructor(
                 }
             }
             .addOnFailureListener {  }
-    }
-
-    fun onLogin(email:String, pass:String){
-        if( email.isEmpty() or pass.isEmpty()){
-            handleException(customMessage = "Please Fill In All Fields")
-            return
-        }
-        inProgress.value = true
-        auth.signInWithEmailAndPassword(email,pass)
-            .addOnCompleteListener{task->
-               if(task.isSuccessful){
-                   signedIn.value = true
-                   inProgress.value=true
-                   auth.currentUser?.uid?.let{ uid->
-                    getUserData(uid)
-                       handleException(customMessage = "Login Success")
-                   }
-               } else{
-                   handleException(task.exception, "Login Failed")
-                   inProgress.value=false
-               }
-
-            }
-            .addOnFailureListener { exc->
-                handleException(exc,"Login Failed")
-                inProgress.value = false
-            }
     }
 
     private fun createOrUpdateProfile(

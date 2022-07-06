@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.storage.FirebaseStorage
 import com.johnkiproptanui.instagramclone.data.Event
 import com.johnkiproptanui.instagramclone.data.UserData
@@ -22,6 +23,15 @@ class InstagramViewModel @Inject constructor(
     val userData = mutableStateOf<UserData?>(null)
     val popUpNotification = mutableStateOf<Event<String>?>(null)
 
+    init{
+        val currentUser = auth.currentUser
+        signedIn.value = currentUser !=null
+        currentUser?.uid?.let {
+            getUserData(it)
+        }
+
+    }
+
     fun onSignUp(username: String, email: String, password: String) {
         inProgress.value = true
 
@@ -36,6 +46,7 @@ class InstagramViewModel @Inject constructor(
                             if(task.isSuccessful){
                                 signedIn.value = true
                                 //Create profile
+                                createOrUpdateProfile(username = username)
                             }else{
                                 handleException(task.exception, "SignUp Failed")
                             }
@@ -44,6 +55,65 @@ class InstagramViewModel @Inject constructor(
                 }
             }
             .addOnFailureListener {  }
+    }
+
+    private fun createOrUpdateProfile(
+        name:String? =null,
+        username: String? =null,
+        bio: String? =null,
+        imageUrl:String? =null
+        ) {
+        val uid = auth.currentUser?.uid;
+        val userData = UserData(
+            userId = uid,
+            name = name ?: userData.value?.name,
+            username= username ?: userData.value?.username,
+            bio = bio ?: userData.value?.bio,
+            imageUrl = imageUrl ?: userData.value?.imageUrl,
+            following = userData.value?.following
+        )
+        uid?.let{uid ->
+            inProgress.value =true;
+            db.collection(USERS).document(uid).get().addOnSuccessListener {
+                if(it.exists()){
+                    it.reference.update(userData.toMap())
+                        .addOnSuccessListener {
+                            this.userData.value = userData
+                            inProgress.value = false;
+                        }
+                        .addOnFailureListener {
+                            handleException(it, "Cannot update user");
+                            inProgress.value = false
+                        }
+                }
+                else{
+                    db.collection(USERS).document(uid).set(userData)
+                    getUserData(uid)
+                    inProgress.value = false
+                }
+            }
+                .addOnFailureListener {
+                    handleException(it, "Cannot create user")
+                    inProgress.value = false
+                }
+
+        }
+    }
+
+    private fun getUserData(uid: String) {
+        inProgress.value = true
+        db.collection(USERS).document(uid).get()
+            .addOnSuccessListener {
+                val user = it.toObject<UserData>()
+                userData.value = user
+                inProgress.value = false
+                popUpNotification.value = Event("User Data retrieved Successfully")
+
+            }
+            .addOnFailureListener {
+                handleException(it,"Cannot retrieve user data")
+                inProgress.value = false}
+
     }
 
     fun handleException(exception: Exception? = null, customMessage:String=""){

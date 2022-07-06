@@ -7,14 +7,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.OutlinedTextField
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
-import com.johnkiproptanui.instagramclone.base.InstagramViewModel
 import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
@@ -24,13 +20,16 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.navigation.NavController
 import com.johnkiproptanui.instagramclone.DestinationScreen
-import com.johnkiproptanui.instagramclone.R
-import com.johnkiproptanui.instagramclone.main.CommonProgressSpinner
 import com.johnkiproptanui.instagramclone.main.navigateTo
+import com.johnkiproptanui.instagramclone.R
+import com.johnkiproptanui.instagramclone.base.InstagramViewModel
+import com.johnkiproptanui.instagramclone.main.CommonProgressSpinner
 
 @Composable
-fun SignUpScreen(navController: NavController, viewModel: InstagramViewModel){
+fun LoginScreen(navController: NavController, vm : InstagramViewModel) {
     //to dismiss keyboard
     val focus = LocalFocusManager.current
     Box(modifier = Modifier.fillMaxSize()){
@@ -38,32 +37,23 @@ fun SignUpScreen(navController: NavController, viewModel: InstagramViewModel){
             .fillMaxWidth()
             .wrapContentHeight()
             .verticalScroll(
+                //this allows for the keyboard adjust resize to remain the one added previously to manifest
                 rememberScrollState()
-            ),
-            horizontalAlignment = Alignment.CenterHorizontally) {
-            val usernameState = remember { mutableStateOf(TextFieldValue())}
+            )) {
             val emailState = remember { mutableStateOf(TextFieldValue())}
             val passState = remember { mutableStateOf(TextFieldValue())}
-            
-            Image(
-                painter = painterResource(id = R.drawable.instagramlogo),
+            Image(painter = painterResource(
+                id = R.drawable.instagramlogo),
                 contentDescription = null,
-                modifier = Modifier
-                    .width(250.dp)
-                    .padding(top = 16.dp)
-                    .padding(8.dp)
-            )
-            Text(text = "SignUp",
-                modifier = Modifier.padding(8.dp),
+            modifier = Modifier
+                .width(250.dp)
+                .padding(top = 16.dp)
+                .padding(8.dp))
+            Text(text = "Login",
+            modifier = Modifier.padding(8.dp),
                 fontSize = 30.sp,
-                fontFamily = FontFamily.SansSerif)
-
-            OutlinedTextField(
-                value = usernameState.value,
-                onValueChange = { usernameState.value = it },
-                modifier = Modifier.padding(8.dp),
-                label = { Text( text = "Username")})
-
+                fontFamily = FontFamily.Serif
+            )
             OutlinedTextField(
                 value = emailState.value,
                 onValueChange = { emailState.value = it },
@@ -75,35 +65,31 @@ fun SignUpScreen(navController: NavController, viewModel: InstagramViewModel){
                 onValueChange = { passState.value = it },
                 modifier = Modifier.padding(8.dp),
                 label = { Text( text = "Password")},
-                visualTransformation = PasswordVisualTransformation()) 
-            
+                visualTransformation = PasswordVisualTransformation()
+            )
             Button(
-
                 onClick = {
-                    focus.clearFocus(force = true)
-                          viewModel.onSignUp(
-                              usernameState.value.text,
-                              emailState.value.text,
-                              passState.value.text
-                          )
+                    //dismiss keyboard
+                focus.clearFocus(force = true)
                 },
                 modifier = Modifier.padding(8.dp)
             ) {
-                Text(text = "SIGN UP")
+                Text(text = "LOGIN")
             }
-
-            Text(text = "Already a user? Go to Login ->",
-            color = Color.Blue,
-            modifier = Modifier
-                .padding(8.dp)
-                .clickable {
-                    navigateTo(navController = navController, DestinationScreen.Login)
-                })
-
+            Text(text = "New here? Go to signup ->",
+                color = Color.Blue,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clickable {
+                        navigateTo(navController = navController, DestinationScreen.SignUp)
+                    })
         }
-        val isLoading = viewModel.inProgress.value
+        val isLoading = vm.inProgress.value
         if (isLoading){
             CommonProgressSpinner()
         }
     }
+
+
+
 }

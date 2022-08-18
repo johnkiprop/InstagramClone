@@ -13,10 +13,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.johnkiproptanui.instagramclone.auth.LoginScreen
+import com.johnkiproptanui.instagramclone.auth.ProfileScreen
 import com.johnkiproptanui.instagramclone.auth.SignUpScreen
 import com.johnkiproptanui.instagramclone.base.InstagramViewModel
-import com.johnkiproptanui.instagramclone.main.FeedScreen
-import com.johnkiproptanui.instagramclone.main.NotificationMessage
+import com.johnkiproptanui.instagramclone.main.*
 import com.johnkiproptanui.instagramclone.ui.theme.InstagramCloneTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -39,6 +39,13 @@ sealed class DestinationScreen(val route : String){
     object SignUp : DestinationScreen("signup")
     object Login: DestinationScreen("login")
     object Feed: DestinationScreen("feed")
+    object Search: DestinationScreen("search")
+    object MyPosts:DestinationScreen("myposts")
+    object Profile:DestinationScreen("profile")
+    object NewPost:DestinationScreen("newpost/{imageUri}"){
+        fun createRoute(uri: String) = "newpost/$uri"
+    }
+
 }
 
 @Composable
@@ -57,6 +64,21 @@ fun InstagramApp() {
        }
        composable(DestinationScreen.Feed.route){
            FeedScreen(navController = navController, vm = viewModel)
+       }
+       composable(DestinationScreen.Search.route){
+           SearchScreen(navController = navController, vm = viewModel)
+       }
+       composable(DestinationScreen.MyPosts.route){
+           MyPostsScreen(navController = navController, vm = viewModel)
+       }
+       composable(DestinationScreen.Profile.route){
+           ProfileScreen(navController = navController, vm =viewModel )
+       }
+       composable(DestinationScreen.NewPost.route){navBackStackEntry ->
+           val imageUri = navBackStackEntry.arguments?.getString("imageUri")
+           imageUri?.let {
+               NewPostScreen(navController = navController, vm =viewModel, encodedUri =it )
+           }
        }
    }
 }
